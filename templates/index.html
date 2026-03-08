@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SafeDriveAI Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="topbar">
+        <div class="brand">
+          <h1>SafeDriveAI</h1>
+          <p>AI Driver Fatigue Monitoring System</p>
+        </div>
+
+        <div class="system-status">
+          <span id="systemHealthText">System Ready</span>
+        </div>
+      </header>
+
+      <div id="alertBanner" class="alert-banner">
+        <span id="alertBannerText">System Ready</span>
+        <span id="alertBannerTime"></span>
+      </div>
+
+      <div class="main-grid">
+        <section class="camera-panel">
+          <h2>Live Camera Feed</h2>
+
+          <img
+            id="videoFeed"
+            src="/video_feed"
+            class="video-frame"
+            alt="Live camera feed"
+          />
+
+          <div class="camera-actions">
+            <button id="startSessionBtn" class="btn primary">
+              Start Monitoring
+            </button>
+            <button id="endSessionBtn" class="btn danger">End Session</button>
+            <button id="refreshStatusBtn" class="btn">Refresh Status</button>
+          </div>
+        </section>
+
+        <section class="status-panel">
+          <h2>Driver Status</h2>
+
+          <div class="metrics">
+            <div class="metric-card">
+              <div class="metric-title">Alertness Score</div>
+              <div id="alertnessScore" class="metric-value">100</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-title">Risk Level</div>
+              <div id="riskLevel" class="metric-value">Safe</div>
+              <div id="riskMessage" class="metric-sub">Driver is alert</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-title">Driver Detected</div>
+              <div id="driverDetected" class="metric-value">No</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-title">Timestamp</div>
+              <div id="statusTimestamp" class="metric-value">-</div>
+            </div>
+          </div>
+
+          <div class="indicators">
+            <div class="indicator">
+              <span>Eyes Closed</span>
+              <span id="eyesClosedBadge" class="badge">No</span>
+            </div>
+
+            <div class="indicator">
+              <span>Yawning</span>
+              <span id="yawningBadge" class="badge">No</span>
+            </div>
+
+            <div class="indicator">
+              <span>Head Drop</span>
+              <span id="headDropBadge" class="badge">No</span>
+            </div>
+
+            <div class="indicator">
+              <span>Session</span>
+              <span id="sessionBadge" class="badge">Inactive</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="bottom-grid">
+        <section class="panel">
+          <h3>Event Log</h3>
+          <div id="eventLog" class="event-log">
+            <div class="empty-state">No events yet</div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h3>Session Summary</h3>
+          <div id="sessionSummary">
+            <div class="summary-item">
+              <span>Status</span>
+              <span>No active session</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Voice Assistant Panel -->
+      <section class="panel voice-panel">
+        <h3>Voice Wake Assistant</h3>
+
+        <div class="voice-grid">
+          <div class="summary-item">
+            <span>Assistant Status</span>
+            <span id="voiceAssistantStatus">Idle</span>
+          </div>
+
+          <div class="summary-item">
+            <span>Last Question</span>
+            <span id="voiceQuestionText">-</span>
+          </div>
+
+          <div class="summary-item">
+            <span>Driver Response</span>
+            <span id="voiceTranscriptText">-</span>
+          </div>
+
+          <div class="summary-item">
+            <span>Response Check</span>
+            <span id="voiceResponseStatus">Not checked</span>
+          </div>
+        </div>
+
+        <div class="camera-actions">
+          <button id="testVoiceBtn" class="btn primary">
+            Test Voice Assistant
+          </button>
+          <button id="listenNowBtn" class="btn">Listen Now</button>
+        </div>
+
+        <p class="voice-note">
+          This assistant speaks to the driver during medium/high fatigue risk
+          and checks whether the driver responds.
+        </p>
+      </section>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+  </body>
+</html>

@@ -5,10 +5,16 @@ Face detection and returning landmarks for analysis
 import os
 import cv2
 import mediapipe as mp
+
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
-from mediapipe.tasks.python.vision import drawing_utils
-from mediapipe.tasks.python.vision import drawing_styles
+
+try:
+    drawing_utils = mp.solutions.drawing_utils
+    drawing_styles = mp.solutions.drawing_styles
+except Exception:
+    drawing_utils = None
+    drawing_styles = None
 
 
 class FaceMeshDetector:

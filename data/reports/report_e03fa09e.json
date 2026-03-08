@@ -1,0 +1,327 @@
+{
+  "session_id": "e03fa09e",
+  "start_time": "2026-03-09T02:05:24",
+  "end_time": "2026-03-09T02:05:57",
+  "duration_seconds": 33,
+  "total_frames_analyzed": 957,
+  "eye_closure_count": 8,
+  "yawn_count": 15,
+  "head_drop_count": 2,
+  "alerts_triggered": 10,
+  "medium_alert_count": 8,
+  "high_alert_count": 2,
+  "max_risk_level": "High",
+  "average_alertness_score": 81.61,
+  "event_log": [
+    {
+      "time": "2026-03-09T02:05:24",
+      "type": "session_start",
+      "message": "Monitoring session started"
+    },
+    {
+      "time": "2026-03-09T02:05:24",
+      "type": "yawning",
+      "message": "Yawning detected",
+      "data": {
+        "score": 80
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:26",
+      "type": "eyes_closed",
+      "message": "Eyes closed detected",
+      "data": {
+        "score": 40
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:26",
+      "type": "medium_alert",
+      "message": "Medium risk alert triggered",
+      "data": {
+        "score": 40
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:26",
+      "type": "yawning",
+      "message": "Yawning detected",
+      "data": {
+        "score": 80
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:28",
+      "type": "eyes_closed",
+      "message": "Eyes closed detected",
+      "data": {
+        "score": 40
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:28",
+      "type": "medium_alert",
+      "message": "Medium risk alert triggered",
+      "data": {
+        "score": 40
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:28",
+      "type": "yawning",
+      "message": "Yawning detected",
+      "data": {
+        "score": 40
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:30",
+      "type": "yawning",
+      "message": "Yawning detected",
+      "data": {
+        "score": 80
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:34",
+      "type": "eyes_closed",
+      "message": "Eyes closed detected",
+      "data": {
+        "score": 60
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:34",
+      "type": "yawning",
+      "message": "Yawning detected",
+      "data": {
+        "score": 40
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:34",
+      "type": "medium_alert",
+      "message": "Medium risk alert triggered",
+      "data": {
+        "score": 40
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:35",
+      "type": "head_drop",
+      "message": "Head drop detected",
+      "data": {
+        "score": 50
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:35",
+      "type": "high_alert",
+      "message": "High risk alert triggered",
+      "data": {
+        "score": 10
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:37",
+      "type": "yawning",
+      "message": "Yawning detected",
+      "data": {
+        "score": 80
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:39",
+      "type": "yawning",
+      "message": "Yawning detected",
+      "data": {
+        "score": 80
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:39",
+      "type": "eyes_closed",
+      "message": "Eyes closed detected",
+      "data": {
+        "score": 60
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:39",
+      "type": "medium_alert",
+      "message": "Medium risk alert triggered",
+      "data": {
+        "score": 40
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:41",
+      "type": "yawning",
+      "message": "Yawning detected",
+      "data": {
+        "score": 80
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:42",
+      "type": "eyes_closed",
+      "message": "Eyes closed detected",
+      "data": {
+        "score": 60
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:42",
+      "type": "medium_alert",
+      "message": "Medium risk alert triggered",
+      "data": {
+        "score": 40
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:43",
+      "type": "yawning",
+      "message": "Yawning detected",
+      "data": {
+        "score": 40
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:43",
+      "type": "head_drop",
+      "message": "Head drop detected",
+      "data": {
+        "score": 10
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:43",
+      "type": "high_alert",
+      "message": "High risk alert triggered",
+      "data": {
+        "score": 10
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:44",
+      "type": "eyes_closed",
+      "message": "Eyes closed detected",
+      "data": {
+        "score": 40
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:44",
+      "type": "medium_alert",
+      "message": "Medium risk alert triggered",
+      "data": {
+        "score": 40
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:45",
+      "type": "yawning",
+      "message": "Yawning detected",
+      "data": {
+        "score": 80
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:47",
+      "type": "yawning",
+      "message": "Yawning detected",
+      "data": {
+        "score": 80
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:48",
+      "type": "eyes_closed",
+      "message": "Eyes closed detected",
+      "data": {
+        "score": 40
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:48",
+      "type": "medium_alert",
+      "message": "Medium risk alert triggered",
+      "data": {
+        "score": 40
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:49",
+      "type": "yawning",
+      "message": "Yawning detected",
+      "data": {
+        "score": 80
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:51",
+      "type": "yawning",
+      "message": "Yawning detected",
+      "data": {
+        "score": 80
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:53",
+      "type": "eyes_closed",
+      "message": "Eyes closed detected",
+      "data": {
+        "score": 40
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:53",
+      "type": "medium_alert",
+      "message": "Medium risk alert triggered",
+      "data": {
+        "score": 40
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:54",
+      "type": "yawning",
+      "message": "Yawning detected",
+      "data": {
+        "score": 80
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:56",
+      "type": "yawning",
+      "message": "Yawning detected",
+      "data": {
+        "score": 80
+      }
+    },
+    {
+      "time": "2026-03-09T02:05:57",
+      "type": "session_end",
+      "message": "Monitoring session ended"
+    }
+  ],
+  "last_status": {
+    "driver_detected": true,
+    "eyes_closed": false,
+    "yawning": true,
+    "head_drop": false,
+    "alertness_score": 80,
+    "risk_level": "Safe",
+    "message": "Driver is alert",
+    "timestamp": "2026-03-09T02:05:57",
+    "ear": 0.313,
+    "mar": 0.404
+  },
+  "voice_assistant_trigger_count": 0,
+  "voice_response_success_count": 0,
+  "voice_response_failure_count": 0,
+  "voice_last_question": null,
+  "voice_last_transcript": null,
+  "voice_last_response_status": "Not checked",
+  "voice_interactions": [],
+  "recommendation": "High fatigue risk detected. The driver should stop in a safe place and rest before continuing."
+}

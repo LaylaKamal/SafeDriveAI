@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SafeDriveAI - Session Report</title>
+
+    <style>
+      :root {
+        --bg: #0b1220;
+        --panel: #121a2b;
+        --panel-2: #182338;
+        --border: rgba(255, 255, 255, 0.08);
+        --text: #e5ecf6;
+        --muted: #94a3b8;
+        --safe: #22c55e;
+        --low: #facc15;
+        --medium: #fb923c;
+        --high: #ef4444;
+        --info: #38bdf8;
+        --shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+        --radius: 18px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background:
+          radial-gradient(
+            circle at top left,
+            rgba(56, 189, 248, 0.08),
+            transparent 20%
+          ),
+          radial-gradient(
+            circle at top right,
+            rgba(34, 197, 94, 0.08),
+            transparent 20%
+          ),
+          linear-gradient(180deg, #09101d 0%, #0b1220 100%);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      .container {
+        width: min(1300px, 94%);
+        margin: 0 auto;
+        padding: 28px 0 40px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: 0.3px;
+      }
+
+      .brand p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 0.98rem;
+      }
+
+      .top-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        border: none;
+        border-radius: 14px;
+        padding: 12px 18px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        opacity: 0.96;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #38bdf8, #2563eb);
+        color: white;
+      }
+
+      .btn-muted {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+
+      .risk-banner {
+        margin-bottom: 24px;
+        padding: 18px 20px;
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .risk-banner.safe {
+        background: rgba(34, 197, 94, 0.12);
+        border-color: rgba(34, 197, 94, 0.28);
+      }
+
+      .risk-banner.low {
+        background: rgba(250, 204, 21, 0.12);
+        border-color: rgba(250, 204, 21, 0.28);
+      }
+
+      .risk-banner.medium {
+        background: rgba(251, 146, 60, 0.12);
+        border-color: rgba(251, 146, 60, 0.28);
+      }
+
+      .risk-banner.high {
+        background: rgba(239, 68, 68, 0.12);
+        border-color: rgba(239, 68, 68, 0.28);
+      }
+
+      .risk-title {
+        font-size: 1.15rem;
+        font-weight: 800;
+        margin-bottom: 6px;
+      }
+
+      .risk-subtitle {
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .risk-pill {
+        padding: 10px 16px;
+        border-radius: 999px;
+        font-weight: 800;
+        border: 1px solid transparent;
+        white-space: nowrap;
+      }
+
+      .pill-safe {
+        background: rgba(34, 197, 94, 0.14);
+        color: #dcffe7;
+        border-color: rgba(34, 197, 94, 0.3);
+      }
+
+      .pill-low {
+        background: rgba(250, 204, 21, 0.14);
+        color: #fff4bf;
+        border-color: rgba(250, 204, 21, 0.3);
+      }
+
+      .pill-medium {
+        background: rgba(251, 146, 60, 0.14);
+        color: #ffe2ca;
+        border-color: rgba(251, 146, 60, 0.3);
+      }
+
+      .pill-high {
+        background: rgba(239, 68, 68, 0.14);
+        color: #ffd9d9;
+        border-color: rgba(239, 68, 68, 0.3);
+      }
+
+      .panel {
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .panel-header {
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .panel-header h2,
+      .panel-header h3 {
+        margin: 0;
+        font-size: 1.05rem;
+      }
+
+      .grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 22px;
+      }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr;
+        gap: 22px;
+        margin-bottom: 22px;
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 18px;
+        box-shadow: var(--shadow);
+      }
+
+      .card-title {
+        color: var(--muted);
+        font-size: 0.92rem;
+        margin-bottom: 10px;
+      }
+
+      .card-value {
+        font-size: 1.9rem;
+        font-weight: 800;
+        line-height: 1.1;
+      }
+
+      .card-sub {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .safe-text {
+        color: var(--safe);
+      }
+      .low-text {
+        color: var(--low);
+      }
+      .medium-text {
+        color: var(--medium);
+      }
+      .high-text {
+        color: var(--high);
+      }
+      .info-text {
+        color: var(--info);
+      }
+
+      .details-wrap,
+      .recommendation-wrap,
+      .events-wrap {
+        padding: 18px;
+      }
+
+      .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+      }
+
+      .detail-item {
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 15px;
+      }
+
+      .detail-key {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+      }
+
+      .detail-value {
+        font-size: 1.05rem;
+        font-weight: 700;
+        word-break: break-word;
+        line-height: 1.5;
+      }
+
+      .recommendation-box {
+        background: linear-gradient(
+          180deg,
+          rgba(56, 189, 248, 0.08),
+          rgba(255, 255, 255, 0.02)
+        );
+        border: 1px solid rgba(56, 189, 248, 0.22);
+        border-radius: 18px;
+        padding: 20px;
+        line-height: 1.7;
+        font-size: 1rem;
+      }
+
+      .event-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: 520px;
+        overflow: auto;
+      }
+
+      .event-item {
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 14px;
+      }
+
+      .event-time {
+        color: var(--muted);
+        font-size: 0.85rem;
+        margin-bottom: 6px;
+      }
+
+      .event-type {
+        display: inline-block;
+        margin-bottom: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--border);
+      }
+
+      .event-message {
+        font-weight: 700;
+        line-height: 1.5;
+      }
+
+      .event-data {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .empty-state {
+        color: var(--muted);
+        text-align: center;
+        padding: 26px 12px;
+      }
+
+      .footer-note {
+        margin-top: 10px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      @media print {
+        body {
+          background: white;
+          color: black;
+        }
+
+        .top-actions {
+          display: none;
+        }
+
+        .panel,
+        .card,
+        .risk-banner,
+        .detail-item,
+        .event-item,
+        .recommendation-box {
+          box-shadow: none;
+        }
+      }
+
+      @media (max-width: 1100px) {
+        .grid-4 {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-2 {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 700px) {
+        .grid-4,
+        .detail-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .brand h1 {
+          font-size: 1.5rem;
+        }
+
+        .card-value {
+          font-size: 1.55rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {% set risk = report.max_risk_level if report.max_risk_level else 'Safe' %}
+    {% set risk_class = 'safe' %} {% set pill_class = 'pill-safe' %} {% set
+    risk_text_class = 'safe-text' %} {% if risk == 'Low' %} {% set risk_class =
+    'low' %} {% set pill_class = 'pill-low' %} {% set risk_text_class =
+    'low-text' %} {% elif risk == 'Medium' %} {% set risk_class = 'medium' %} {%
+    set pill_class = 'pill-medium' %} {% set risk_text_class = 'medium-text' %}
+    {% elif risk == 'High' %} {% set risk_class = 'high' %} {% set pill_class =
+    'pill-high' %} {% set risk_text_class = 'high-text' %} {% endif %}
+
+    <div class="container">
+      <div class="topbar">
+        <div class="brand">
+          <h1>SafeDriveAI Session Report</h1>
+          <p>
+            Final trip summary generated after driver monitoring session
+            completion
+          </p>
+        </div>
+
+        <div class="top-actions">
+          <a href="/" class="btn btn-primary">Back to Dashboard</a>
+          <button class="btn btn-muted" onclick="window.print()">
+            Print Report
+          </button>
+        </div>
+      </div>
+
+      <section class="risk-banner {{ risk_class }}">
+        <div>
+          <div class="risk-title">Highest Detected Risk Level</div>
+          <div class="risk-subtitle">
+            This report summarizes the monitoring session, fatigue indicators,
+            and final recommendation.
+          </div>
+        </div>
+
+        <div class="risk-pill {{ pill_class }}">{{ risk }}</div>
+      </section>
+
+      <section class="grid-4">
+        <div class="card">
+          <div class="card-title">Session ID</div>
+          <div class="card-value info-text">{{ report.session_id or '-' }}</div>
+          <div class="card-sub">Unique identifier for this trip session</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Duration</div>
+          <div class="card-value info-text">
+            {{ report.duration_seconds or 0 }}
+          </div>
+          <div class="card-sub">Total monitoring time in seconds</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Average Alertness Score</div>
+          <div class="card-value {{ risk_text_class }}">
+            {{ report.average_alertness_score or 0 }}
+          </div>
+          <div class="card-sub">Average score recorded during the session</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Total Frames Analyzed</div>
+          <div class="card-value info-text">
+            {{ report.total_frames_analyzed or 0 }}
+          </div>
+          <div class="card-sub">
+            Frames processed by the backend and vision module
+          </div>
+        </div>
+      </section>
+
+      <div class="grid-2">
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Session Details</h2>
+            <span class="info-text">Core trip metrics</span>
+          </div>
+
+          <div class="details-wrap">
+            <div class="detail-grid">
+              <div class="detail-item">
+                <div class="detail-key">Start Time</div>
+                <div class="detail-value">{{ report.start_time or '-' }}</div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-key">End Time</div>
+                <div class="detail-value">{{ report.end_time or '-' }}</div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-key">Eye Closure Events</div>
+                <div class="detail-value">
+                  {{ report.eye_closure_count or 0 }}
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-key">Yawning Events</div>
+                <div class="detail-value">{{ report.yawn_count or 0 }}</div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-key">Head Drop Events</div>
+                <div class="detail-value">
+                  {{ report.head_drop_count or 0 }}
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-key">Alerts Triggered</div>
+                <div class="detail-value">
+                  {{ report.alerts_triggered or 0 }}
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-key">Medium Alerts</div>
+                <div class="detail-value">
+                  {{ report.medium_alert_count or 0 }}
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-key">High Alerts</div>
+                <div class="detail-value">
+                  {{ report.high_alert_count or 0 }}
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-key">Maximum Risk Level</div>
+                <div class="detail-value {{ risk_text_class }}">
+                  {{ report.max_risk_level or '-' }}
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-key">Last Status Snapshot</div>
+                <div class="detail-value">
+                  {% if report.last_status %} Score: {{
+                  report.last_status.alertness_score if
+                  report.last_status.alertness_score is defined else '-' }}
+                  <br />
+                  Risk: {{ report.last_status.risk_level if
+                  report.last_status.risk_level is defined else '-' }} {% else
+                  %} No final snapshot available {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Final Recommendation</h2>
+            <span class="info-text">System decision summary</span>
+          </div>
+
+          <div class="recommendation-wrap">
+            <div class="recommendation-box">
+              {{ report.recommendation or 'No recommendation available.' }}
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h3>Event Timeline</h3>
+          <span class="info-text">Logged session events</span>
+        </div>
+
+        <div class="events-wrap">
+          {% if report.event_log and report.event_log|length > 0 %}
+          <div class="event-list">
+            {% for event in report.event_log|reverse %}
+            <div class="event-item">
+              <div class="event-time">{{ event.time or '-' }}</div>
+              <div class="event-type">{{ event.type or 'event' }}</div>
+              <div class="event-message">{{ event.message or '-' }}</div>
+
+              {% if event.data %}
+              <div class="event-data">
+                {% for key, value in event.data.items() %}
+                <div><strong>{{ key }}:</strong> {{ value }}</div>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="empty-state">
+            No events were recorded for this session.
+          </div>
+          {% endif %}
+        </div>
+      </section>
+
+      <div class="footer-note">
+        SafeDriveAI report generated from the backend session logger and vision
+        analysis results.
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "session_id": "9e139a3e",
+  "start_time": "2026-03-09T01:50:07",
+  "end_time": "2026-03-09T01:50:21",
+  "duration_seconds": 14,
+  "total_frames_analyzed": 0,
+  "eye_closure_count": 0,
+  "yawn_count": 0,
+  "head_drop_count": 0,
+  "alerts_triggered": 0,
+  "medium_alert_count": 0,
+  "high_alert_count": 0,
+  "max_risk_level": "Safe",
+  "average_alertness_score": 100.0,
+  "event_log": [
+    {
+      "time": "2026-03-09T01:50:07",
+      "type": "session_start",
+      "message": "Monitoring session started"
+    },
+    {
+      "time": "2026-03-09T01:50:21",
+      "type": "session_end",
+      "message": "Monitoring session ended"
+    }
+  ],
+  "last_status": null,
+  "voice_assistant_trigger_count": 0,
+  "voice_response_success_count": 0,
+  "voice_response_failure_count": 0,
+  "voice_last_question": null,
+  "voice_last_transcript": null,
+  "voice_last_response_status": "Not checked",
+  "voice_interactions": [],
+  "recommendation": "Driver state was generally stable. Continue safe driving habits and take regular breaks on long trips."
+}

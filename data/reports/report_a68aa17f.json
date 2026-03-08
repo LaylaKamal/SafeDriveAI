@@ -1,0 +1,79 @@
+{
+  "session_id": "a68aa17f",
+  "start_time": "2026-03-09T01:55:04",
+  "end_time": "2026-03-09T01:55:06",
+  "duration_seconds": 2,
+  "total_frames_analyzed": 66,
+  "eye_closure_count": 0,
+  "yawn_count": 0,
+  "head_drop_count": 2,
+  "alerts_triggered": 2,
+  "medium_alert_count": 2,
+  "high_alert_count": 0,
+  "max_risk_level": "Medium",
+  "average_alertness_score": 50.0,
+  "event_log": [
+    {
+      "time": "2026-03-09T01:55:04",
+      "type": "session_start",
+      "message": "Monitoring session started"
+    },
+    {
+      "time": "2026-03-09T01:55:04",
+      "type": "head_drop",
+      "message": "Head drop detected",
+      "data": {
+        "score": 50
+      }
+    },
+    {
+      "time": "2026-03-09T01:55:04",
+      "type": "medium_alert",
+      "message": "Medium risk alert triggered",
+      "data": {
+        "score": 50
+      }
+    },
+    {
+      "time": "2026-03-09T01:55:06",
+      "type": "head_drop",
+      "message": "Head drop detected",
+      "data": {
+        "score": 50
+      }
+    },
+    {
+      "time": "2026-03-09T01:55:06",
+      "type": "medium_alert",
+      "message": "Medium risk alert triggered",
+      "data": {
+        "score": 50
+      }
+    },
+    {
+      "time": "2026-03-09T01:55:06",
+      "type": "session_end",
+      "message": "Monitoring session ended"
+    }
+  ],
+  "last_status": {
+    "driver_detected": true,
+    "eyes_closed": false,
+    "yawning": false,
+    "head_drop": true,
+    "alertness_score": 50,
+    "risk_level": "Medium",
+    "message": "Please focus and take a break soon",
+    "timestamp": "2026-03-09T01:55:06",
+    "ear": 0.481,
+    "mar": 0.313
+  },
+  "voice_assistant_trigger_count": 0,
+  "voice_response_success_count": 0,
+  "voice_response_failure_count": 0,
+  "voice_last_question": null,
+  "voice_last_transcript": null,
+  "voice_last_response_status": "Not checked",
+  "voice_interactions": [],
+  "recommendation": "Moderate fatigue signs detected. A short break, water, and fresh air are recommended."
+}
