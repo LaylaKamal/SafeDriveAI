@@ -7,150 +7,248 @@
     <link rel="stylesheet" href="/static/css/style.css" />
   </head>
   <body>
-    <div class="container">
-      <header class="topbar">
-        <div class="brand">
-          <h1>SafeDriveAI</h1>
-          <p>AI Driver Fatigue Monitoring System</p>
-        </div>
+    <div class="page-shell">
+      <div class="ambient ambient-1"></div>
+      <div class="ambient ambient-2"></div>
+      <div class="ambient ambient-3"></div>
 
-        <div class="system-status">
-          <span id="systemHealthText">System Ready</span>
-        </div>
-      </header>
+      <div class="container">
+        <header class="hero">
+          <div class="hero-left">
+            <div class="logo-badge">AI</div>
 
-      <div id="alertBanner" class="alert-banner">
-        <span id="alertBannerText">System Ready</span>
-        <span id="alertBannerTime"></span>
+            <div>
+              <p class="eyebrow">AI Driver Safety System</p>
+              <h1>SafeDriveAI</h1>
+              <p class="hero-subtitle">
+                Real-time driver fatigue monitoring using computer vision,
+                adaptive risk scoring, and a smart English voice assistant for
+                safer driving.
+              </p>
+            </div>
+          </div>
+
+          <div class="hero-right">
+            <div class="status-chip" id="systemStatusChip">
+              <span class="status-dot"></span>
+              <span id="systemHealthText">System Ready</span>
+            </div>
+          </div>
+        </header>
+
+        <section class="quick-overview">
+          <div class="overview-card glass">
+            <div class="overview-label">Session State</div>
+            <div class="overview-value" id="overviewSessionState">Inactive</div>
+            <div class="overview-sub">Current monitoring session status</div>
+          </div>
+
+          <div class="overview-card glass">
+            <div class="overview-label">Current Risk</div>
+            <div class="overview-value" id="overviewRiskLevel">Safe</div>
+            <div class="overview-sub" id="overviewRiskMessage">
+              Driver is alert
+            </div>
+          </div>
+
+          <div class="overview-card glass">
+            <div class="overview-label">Alertness Score</div>
+            <div class="overview-value" id="overviewScore">100</div>
+            <div class="overview-sub">Live AI attention score</div>
+          </div>
+        </section>
+
+        <section id="alertBanner" class="alert-banner glass">
+          <div class="alert-banner-left">
+            <div class="alert-banner-title">Live System Message</div>
+            <div id="alertBannerText" class="alert-banner-text">
+              System ready
+            </div>
+          </div>
+          <div id="alertBannerTime" class="alert-banner-time">-</div>
+        </section>
+
+        <section class="main-layout">
+          <div class="left-column">
+            <section class="panel glass camera-panel">
+              <div class="panel-head">
+                <div>
+                  <p class="panel-kicker">Vision Monitoring</p>
+                  <h2>Live Camera Feed</h2>
+                </div>
+                <div class="mini-chip" id="cameraStateChip">Camera Ready</div>
+              </div>
+
+              <div class="video-wrapper">
+                <img
+                  id="videoFeed"
+                  src="/video_feed"
+                  class="video-frame"
+                  alt="Live camera feed"
+                />
+
+                <div class="video-overlay">
+                  <span class="live-dot"></span>
+                  <span>Live Monitoring</span>
+                </div>
+              </div>
+
+              <div class="camera-actions">
+                <button id="startSessionBtn" class="btn primary">
+                  Start Monitoring
+                </button>
+                <button id="endSessionBtn" class="btn danger">
+                  End Session
+                </button>
+                <button id="refreshStatusBtn" class="btn secondary">
+                  Refresh Status
+                </button>
+              </div>
+            </section>
+
+            <section class="panel glass voice-panel">
+              <div class="panel-head">
+                <div>
+                  <p class="panel-kicker">Interactive AI Assistant</p>
+                  <h3>Voice Wake Assistant</h3>
+                </div>
+                <div class="mini-chip" id="voiceAssistantStatus">Idle</div>
+              </div>
+
+              <div class="voice-grid">
+                <div class="info-tile">
+                  <span class="info-title">Last Question</span>
+                  <span id="voiceQuestionText" class="info-value">-</span>
+                </div>
+
+                <div class="info-tile">
+                  <span class="info-title">Driver Response</span>
+                  <span id="voiceTranscriptText" class="info-value">-</span>
+                </div>
+
+                <div class="info-tile">
+                  <span class="info-title">Response Check</span>
+                  <span id="voiceResponseStatus" class="info-value">
+                    Not checked
+                  </span>
+                </div>
+
+                <div class="info-tile">
+                  <span class="info-title">Speech Language</span>
+                  <span id="voiceLanguageText" class="info-value">English</span>
+                </div>
+              </div>
+
+              <div class="camera-actions">
+                <button id="testVoiceBtn" class="btn primary">
+                  Test Voice Assistant
+                </button>
+                <button id="listenNowBtn" class="btn secondary">
+                  Listen Now
+                </button>
+              </div>
+
+              <p class="voice-note">
+                When fatigue remains persistent, the assistant speaks in English
+                and checks whether the driver is still alert and responsive.
+              </p>
+            </section>
+          </div>
+
+          <div class="right-column">
+            <section class="panel glass highlight-panel">
+              <div class="panel-head">
+                <div>
+                  <p class="panel-kicker">Live Driver Analysis</p>
+                  <h2>Driver Status</h2>
+                </div>
+              </div>
+
+              <div class="hero-risk-card" id="heroRiskCard">
+                <div class="hero-risk-top">
+                  <span class="hero-risk-label">Current Risk Level</span>
+                  <span id="riskLevelPill" class="risk-pill safe">Safe</span>
+                </div>
+
+                <div class="hero-risk-main">
+                  <div class="hero-risk-score">
+                    <span class="score-caption">Alertness Score</span>
+                    <span id="alertnessScore" class="score-number">100</span>
+                  </div>
+
+                  <div class="hero-risk-message-wrap">
+                    <span class="score-caption">System Message</span>
+                    <span id="riskMessage" class="hero-risk-message">
+                      Driver is alert
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="metrics-grid">
+                <div class="metric-card">
+                  <span class="metric-title">Driver Detected</span>
+                  <span id="driverDetected" class="metric-value">No</span>
+                </div>
+
+                <div class="metric-card">
+                  <span class="metric-title">Timestamp</span>
+                  <span id="statusTimestamp" class="metric-value">-</span>
+                </div>
+
+                <div class="metric-card">
+                  <span class="metric-title">Eyes Closed</span>
+                  <span id="eyesClosedBadge" class="badge neutral">No</span>
+                </div>
+
+                <div class="metric-card">
+                  <span class="metric-title">Yawning</span>
+                  <span id="yawningBadge" class="badge neutral">No</span>
+                </div>
+
+                <div class="metric-card">
+                  <span class="metric-title">Head Drop</span>
+                  <span id="headDropBadge" class="badge neutral">No</span>
+                </div>
+
+                <div class="metric-card">
+                  <span class="metric-title">Session</span>
+                  <span id="sessionBadge" class="badge neutral">Inactive</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel glass">
+              <div class="panel-head">
+                <div>
+                  <p class="panel-kicker">System Activity</p>
+                  <h3>Event Log</h3>
+                </div>
+              </div>
+
+              <div id="eventLog" class="event-log">
+                <div class="empty-state">No events yet</div>
+              </div>
+            </section>
+
+            <section class="panel glass">
+              <div class="panel-head">
+                <div>
+                  <p class="panel-kicker">Session Metrics</p>
+                  <h3>Session Summary</h3>
+                </div>
+              </div>
+
+              <div id="sessionSummary" class="summary-list">
+                <div class="summary-item">
+                  <span>Status</span>
+                  <span>No active session</span>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
       </div>
-
-      <div class="main-grid">
-        <section class="camera-panel">
-          <h2>Live Camera Feed</h2>
-
-          <img
-            id="videoFeed"
-            src="/video_feed"
-            class="video-frame"
-            alt="Live camera feed"
-          />
-
-          <div class="camera-actions">
-            <button id="startSessionBtn" class="btn primary">
-              Start Monitoring
-            </button>
-            <button id="endSessionBtn" class="btn danger">End Session</button>
-            <button id="refreshStatusBtn" class="btn">Refresh Status</button>
-          </div>
-        </section>
-
-        <section class="status-panel">
-          <h2>Driver Status</h2>
-
-          <div class="metrics">
-            <div class="metric-card">
-              <div class="metric-title">Alertness Score</div>
-              <div id="alertnessScore" class="metric-value">100</div>
-            </div>
-
-            <div class="metric-card">
-              <div class="metric-title">Risk Level</div>
-              <div id="riskLevel" class="metric-value">Safe</div>
-              <div id="riskMessage" class="metric-sub">Driver is alert</div>
-            </div>
-
-            <div class="metric-card">
-              <div class="metric-title">Driver Detected</div>
-              <div id="driverDetected" class="metric-value">No</div>
-            </div>
-
-            <div class="metric-card">
-              <div class="metric-title">Timestamp</div>
-              <div id="statusTimestamp" class="metric-value">-</div>
-            </div>
-          </div>
-
-          <div class="indicators">
-            <div class="indicator">
-              <span>Eyes Closed</span>
-              <span id="eyesClosedBadge" class="badge">No</span>
-            </div>
-
-            <div class="indicator">
-              <span>Yawning</span>
-              <span id="yawningBadge" class="badge">No</span>
-            </div>
-
-            <div class="indicator">
-              <span>Head Drop</span>
-              <span id="headDropBadge" class="badge">No</span>
-            </div>
-
-            <div class="indicator">
-              <span>Session</span>
-              <span id="sessionBadge" class="badge">Inactive</span>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <div class="bottom-grid">
-        <section class="panel">
-          <h3>Event Log</h3>
-          <div id="eventLog" class="event-log">
-            <div class="empty-state">No events yet</div>
-          </div>
-        </section>
-
-        <section class="panel">
-          <h3>Session Summary</h3>
-          <div id="sessionSummary">
-            <div class="summary-item">
-              <span>Status</span>
-              <span>No active session</span>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <!-- Voice Assistant Panel -->
-      <section class="panel voice-panel">
-        <h3>Voice Wake Assistant</h3>
-
-        <div class="voice-grid">
-          <div class="summary-item">
-            <span>Assistant Status</span>
-            <span id="voiceAssistantStatus">Idle</span>
-          </div>
-
-          <div class="summary-item">
-            <span>Last Question</span>
-            <span id="voiceQuestionText">-</span>
-          </div>
-
-          <div class="summary-item">
-            <span>Driver Response</span>
-            <span id="voiceTranscriptText">-</span>
-          </div>
-
-          <div class="summary-item">
-            <span>Response Check</span>
-            <span id="voiceResponseStatus">Not checked</span>
-          </div>
-        </div>
-
-        <div class="camera-actions">
-          <button id="testVoiceBtn" class="btn primary">
-            Test Voice Assistant
-          </button>
-          <button id="listenNowBtn" class="btn">Listen Now</button>
-        </div>
-
-        <p class="voice-note">
-          This assistant speaks to the driver during medium/high fatigue risk
-          and checks whether the driver responds.
-        </p>
-      </section>
     </div>
 
     <script src="/static/js/app.js"></script>

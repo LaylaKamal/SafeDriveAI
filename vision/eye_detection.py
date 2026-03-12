@@ -2,28 +2,34 @@
 Step 5-6: Eye analysis
 Calculate EAR (Eye Aspect Ratio) and detect eye closure
 """
+
 import math
+
 try:
     from .landmarks import LEFT_EYE, RIGHT_EYE
 except ImportError:
     from landmarks import LEFT_EYE, RIGHT_EYE
 
-# EAR threshold - below this eye is considered closed
-EAR_THRESHOLD = 0.21
 
-# Consecutive frames with eyes closed to consider drowsy
+EAR_THRESHOLD = 0.21
 EYE_CLOSED_FRAMES_THRESHOLD = 3
+
+# Adaptive baseline settings
+BASELINE_FRAMES_REQUIRED = 30
+BASELINE_MIN_EAR = 0.18
+BASELINE_MAX_EAR = 0.5
+BASELINE_FACTOR = 0.78
 
 
 def _distance(p1, p2):
-    """Calculate distance between two points"""
+    """Calculate Euclidean distance between two points."""
     if p1 is None or p2 is None:
-        return 0
+        return 0.0
     return math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
 
 
 def _get_point(landmarks, index):
-    """Extract point coordinates from landmarks"""
+    """Extract normalized point coordinates from landmarks."""
     if landmarks is None or index >= len(landmarks):
         return None
     lm = landmarks[index]
@@ -32,10 +38,11 @@ def _get_point(landmarks, index):
 
 def _calculate_ear(landmarks, eye_indices):
     """
-    Calculate Eye Aspect Ratio for one eye
+    Calculate Eye Aspect Ratio for one eye.
+
     EAR = (|P2-P6| + |P3-P5|) / (2 * |P1-P4|)
     """
-    if len(eye_indices) != 6:
+    if landmarks is None or len(eye_indices) != 6:
         return 0.0
 
     p1 = _get_point(landmarks, eye_indices[0])
@@ -59,20 +66,22 @@ def _calculate_ear(landmarks, eye_indices):
     return ear
 
 
-def analyze_eyes(landmarks, closed_frames_counter=0):
+def analyze_eyes(landmarks, threshold=EAR_THRESHOLD):
     """
-    Analyze eye state
-    
+    Analyze eye state from a single frame.
+
     Args:
         landmarks: landmarks list from Face Mesh
-        closed_frames_counter: closed frames counter (passed externally for tracking)
-        
+        threshold: EAR threshold for closed-eye detection
+
     Returns:
-        dict: {
+        dict:
+        {
             "eyes_closed": bool,
             "ear": float,
             "left_ear": float,
-            "right_ear": float
+            "right_ear": float,
+            "ear_threshold": float
         }
     """
     if landmarks is None:
@@ -81,43 +90,101 @@ def analyze_eyes(landmarks, closed_frames_counter=0):
             "ear": 0.0,
             "left_ear": 0.0,
             "right_ear": 0.0,
+            "ear_threshold": round(threshold, 3),
         }
 
     left_ear = _calculate_ear(landmarks, LEFT_EYE)
     right_ear = _calculate_ear(landmarks, RIGHT_EYE)
 
-    # Average of both eyes
-    ear = (left_ear + right_ear) / 2.0 if (left_ear > 0 and right_ear > 0) else 0.0
+    valid_values = [v for v in [left_ear, right_ear] if v > 0]
+    ear = sum(valid_values) / len(valid_values) if valid_values else 0.0
 
-    # Eye closed if EAR below threshold
-    is_closed = ear < EAR_THRESHOLD if ear > 0 else True
+    # Do not mark as closed if EAR could not be calculated
+    if ear <= 0:
+        is_closed = False
+    else:
+        is_closed = ear < threshold
 
     return {
         "eyes_closed": is_closed,
         "ear": round(ear, 3),
         "left_ear": round(left_ear, 3),
         "right_ear": round(right_ear, 3),
+        "ear_threshold": round(threshold, 3),
     }
 
 
 class EyeStateTracker:
-    """Track eye state across multiple frames"""
+    """Track eye state across multiple frames with adaptive baseline."""
 
-    def __init__(self, closed_threshold=EYE_CLOSED_FRAMES_THRESHOLD):
+    def __init__(
+        self,
+        closed_threshold=EYE_CLOSED_FRAMES_THRESHOLD,
+        baseline_frames_required=BASELINE_FRAMES_REQUIRED,
+    ):
         self.closed_frames = 0
         self.closed_threshold = closed_threshold
 
+        self.baseline_frames_required = baseline_frames_required
+        self.ear_history = []
+        self.baseline_ear = None
+
+    def _update_baseline(self, ear):
+        """
+        Collect EAR values during normal-looking frames to build a personal baseline.
+        """
+        if ear <= 0:
+            return
+
+        if not (BASELINE_MIN_EAR <= ear <= BASELINE_MAX_EAR):
+            return
+
+        if self.baseline_ear is None:
+            self.ear_history.append(ear)
+
+            if len(self.ear_history) >= self.baseline_frames_required:
+                self.baseline_ear = sum(self.ear_history) / len(self.ear_history)
+
+    def _get_dynamic_threshold(self):
+        """
+        Use personal EAR baseline if available, otherwise fallback to static threshold.
+        """
+        if self.baseline_ear is None:
+            return EAR_THRESHOLD
+
+        dynamic_threshold = self.baseline_ear * BASELINE_FACTOR
+        return max(0.16, min(dynamic_threshold, 0.30))
+
+    def reset(self):
+        """Reset eye tracker state."""
+        self.closed_frames = 0
+        self.ear_history = []
+        self.baseline_ear = None
+
     def update(self, landmarks):
         """
-        Update state and return result.
-        eyes_closed = True only if eye closed for multiple consecutive frames.
+        Update tracker and return smoothed eye-closure result.
+
+        Eyes are considered truly closed only after consecutive closed frames.
         """
-        result = analyze_eyes(landmarks)
+        threshold = self._get_dynamic_threshold()
+        result = analyze_eyes(landmarks, threshold=threshold)
+
+        ear = result["ear"]
+
+        # Update baseline only from likely-open eyes
+        if ear > threshold:
+            self._update_baseline(ear)
 
         if result["eyes_closed"]:
             self.closed_frames += 1
             result["eyes_closed"] = self.closed_frames >= self.closed_threshold
         else:
             self.closed_frames = 0
+
+        result["closed_frames"] = self.closed_frames
+        result["baseline_ear"] = (
+            round(self.baseline_ear, 3) if self.baseline_ear is not None else None
+        )
 
         return result

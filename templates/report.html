@@ -46,7 +46,7 @@
       }
 
       .container {
-        width: min(1300px, 94%);
+        width: min(1320px, 94%);
         margin: 0 auto;
         padding: 28px 0 40px;
       }
@@ -63,8 +63,8 @@
       .brand h1 {
         margin: 0;
         font-size: 2rem;
-        font-weight: 800;
-        letter-spacing: 0.3px;
+        font-weight: 900;
+        letter-spacing: 0.2px;
       }
 
       .brand p {
@@ -88,14 +88,14 @@
         border-radius: 14px;
         padding: 12px 18px;
         font-size: 0.95rem;
-        font-weight: 700;
+        font-weight: 800;
         cursor: pointer;
         transition: 0.2s ease;
       }
 
       .btn:hover {
         transform: translateY(-1px);
-        opacity: 0.96;
+        opacity: 0.97;
       }
 
       .btn-primary {
@@ -144,7 +144,7 @@
 
       .risk-title {
         font-size: 1.15rem;
-        font-weight: 800;
+        font-weight: 900;
         margin-bottom: 6px;
       }
 
@@ -156,7 +156,7 @@
       .risk-pill {
         padding: 10px 16px;
         border-radius: 999px;
-        font-weight: 800;
+        font-weight: 900;
         border: 1px solid transparent;
         white-space: nowrap;
       }
@@ -243,7 +243,7 @@
 
       .card-value {
         font-size: 1.9rem;
-        font-weight: 800;
+        font-weight: 900;
         line-height: 1.1;
       }
 
@@ -256,15 +256,19 @@
       .safe-text {
         color: var(--safe);
       }
+
       .low-text {
         color: var(--low);
       }
+
       .medium-text {
         color: var(--medium);
       }
+
       .high-text {
         color: var(--high);
       }
+
       .info-text {
         color: var(--info);
       }
@@ -310,8 +314,9 @@
         border: 1px solid rgba(56, 189, 248, 0.22);
         border-radius: 18px;
         padding: 20px;
-        line-height: 1.7;
+        line-height: 1.8;
         font-size: 1rem;
+        font-weight: 700;
       }
 
       .event-list {
@@ -341,13 +346,13 @@
         padding: 6px 10px;
         border-radius: 999px;
         font-size: 0.82rem;
-        font-weight: 700;
+        font-weight: 800;
         background: rgba(255, 255, 255, 0.06);
         border: 1px solid var(--border);
       }
 
       .event-message {
-        font-weight: 700;
+        font-weight: 800;
         line-height: 1.5;
       }
 
@@ -431,7 +436,7 @@
         <div class="brand">
           <h1>SafeDriveAI Session Report</h1>
           <p>
-            Final trip summary generated after driver monitoring session
+            Final AI-generated summary after driver monitoring session
             completion
           </p>
         </div>
@@ -449,7 +454,7 @@
           <div class="risk-title">Highest Detected Risk Level</div>
           <div class="risk-subtitle">
             This report summarizes the monitoring session, fatigue indicators,
-            and final recommendation.
+            voice assistant interaction, and final system recommendation.
           </div>
         </div>
 
@@ -484,9 +489,41 @@
           <div class="card-value info-text">
             {{ report.total_frames_analyzed or 0 }}
           </div>
-          <div class="card-sub">
-            Frames processed by the backend and vision module
+          <div class="card-sub">Frames processed by the AI vision module</div>
+        </div>
+      </section>
+
+      <section class="grid-4">
+        <div class="card">
+          <div class="card-title">Voice Assistant Triggers</div>
+          <div class="card-value info-text">
+            {{ report.voice_assistant_trigger_count or 0 }}
           </div>
+          <div class="card-sub">Number of assistant activations</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Successful Driver Responses</div>
+          <div class="card-value safe-text">
+            {{ report.voice_response_success_count or 0 }}
+          </div>
+          <div class="card-sub">Validated driver voice responses</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Missed / Failed Responses</div>
+          <div class="card-value high-text">
+            {{ report.voice_response_failure_count or 0 }}
+          </div>
+          <div class="card-sub">No valid response detected</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">System Verdict</div>
+          <div class="card-value {{ risk_text_class }}">
+            {{ report.max_risk_level or 'Safe' }}
+          </div>
+          <div class="card-sub">Overall session safety outcome</div>
         </div>
       </section>
 
@@ -546,6 +583,20 @@
                 <div class="detail-key">High Alerts</div>
                 <div class="detail-value">
                   {{ report.high_alert_count or 0 }}
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-key">Last Voice Question</div>
+                <div class="detail-value">
+                  {{ report.voice_last_question or 'No question recorded' }}
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-key">Last Voice Response Status</div>
+                <div class="detail-value">
+                  {{ report.voice_last_response_status or 'Not checked' }}
                 </div>
               </div>
 
@@ -620,8 +671,8 @@
       </section>
 
       <div class="footer-note">
-        SafeDriveAI report generated from the backend session logger and vision
-        analysis results.
+        SafeDriveAI report generated from backend session logging, AI vision
+        analysis, and voice assistant interaction results.
       </div>
     </div>
   </body>

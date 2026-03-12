@@ -1,5 +1,4 @@
 const alertnessScore = document.getElementById("alertnessScore");
-const riskLevel = document.getElementById("riskLevel");
 const riskMessage = document.getElementById("riskMessage");
 const driverDetected = document.getElementById("driverDetected");
 const statusTimestamp = document.getElementById("statusTimestamp");
@@ -24,18 +23,41 @@ const voiceAssistantStatus = document.getElementById("voiceAssistantStatus");
 const voiceQuestionText = document.getElementById("voiceQuestionText");
 const voiceTranscriptText = document.getElementById("voiceTranscriptText");
 const voiceResponseStatus = document.getElementById("voiceResponseStatus");
+const voiceLanguageText = document.getElementById("voiceLanguageText");
+
 const testVoiceBtn = document.getElementById("testVoiceBtn");
 const listenNowBtn = document.getElementById("listenNowBtn");
 
+const overviewSessionState = document.getElementById("overviewSessionState");
+const overviewRiskLevel = document.getElementById("overviewRiskLevel");
+const overviewRiskMessage = document.getElementById("overviewRiskMessage");
+const overviewScore = document.getElementById("overviewScore");
+const riskLevelPill = document.getElementById("riskLevelPill");
+const heroRiskCard = document.getElementById("heroRiskCard");
+const cameraStateChip = document.getElementById("cameraStateChip");
+
 let sessionActive = false;
 let lastRiskLevel = "Safe";
-let voiceAssistantBusy = false;
 let lastVoiceTriggerTime = 0;
-let lastTranscript = "";
-let latestSessionData = null;
+let voiceAssistantBusy = false;
 
-const VOICE_COOLDOWN_MS = 12000;
-const VOICE_RESPONSE_MIN_LENGTH = 2;
+let currentVoiceQuestion = "";
+let currentVoiceReason = "manual";
+let currentVoiceRiskLevel = "Safe";
+let currentDialogueStage = 0;
+let currentTranscript = "";
+let escalationCount = 0;
+
+let headDropStartTime = null;
+let eyesClosedStartTime = null;
+let highRiskStartTime = null;
+
+const HEAD_DROP_DELAY_MS = 5000;
+const EYES_CLOSED_DELAY_MS = 3000;
+const HIGH_RISK_DELAY_MS = 2500;
+
+const VOICE_COOLDOWN_MS = 15000;
+const LISTEN_TIMEOUT_MS = 5000;
 
 const warningSound = new Audio("/static/sounds/warning.wav");
 const alertSound = new Audio("/static/sounds/alert.wav");
@@ -43,24 +65,114 @@ const alertSound = new Audio("/static/sounds/alert.wav");
 const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 
-const voiceQuestions = [
-  "Are you okay?",
-  "Please say something so I know you are awake.",
-  "What is your name?",
-  "Can you tell me how you feel right now?",
-  "Please answer: are you still focused?",
+const DIALOG_FLOW = {
+  Medium: [
+    "You seem a little tired. Are you okay?",
+    "Please stay focused. Can you confirm that you are alert?",
+    "Say yes if you are fine and still paying attention.",
+  ],
+  High: [
+    "Warning. You appear very fatigued. Are you still awake?",
+    "Please respond now so I can confirm you are okay.",
+    "I could not confirm your condition. Do you need to stop and take a break?",
+  ],
+  manual: [
+    "Hello. This is a voice assistant test. Can you hear me?",
+    "Please say yes if you can hear me clearly.",
+    "Thank you. The voice assistant test is complete.",
+  ],
+};
+
+const POSITIVE_WORDS = [
+  "yes",
+  "yeah",
+  "yep",
+  "i am okay",
+  "i'm okay",
+  "i am fine",
+  "i'm fine",
+  "fine",
+  "good",
+  "awake",
+  "alert",
+  "i can hear you",
+  "hear you",
+  "i am here",
+  "still awake",
+  "focused",
+  "attentive",
+  "i am alert",
+  "i'm alert",
+  "i am good",
+  "i'm good",
+  "okay",
+  "all good",
 ];
+
+const NEGATIVE_WORDS = [
+  "no",
+  "not okay",
+  "tired",
+  "sleepy",
+  "drowsy",
+  "exhausted",
+  "fatigued",
+  "need a break",
+  "need rest",
+  "stop",
+  "rest",
+  "pull over",
+  "i am not fine",
+  "i'm not fine",
+  "can't focus",
+  "cannot focus",
+  "need to stop",
+  "i am tired",
+  "i'm tired",
+  "i am sleepy",
+  "i'm sleepy",
+  "not good",
+  "i need rest",
+  "i need a break",
+];
+
+function setRiskVisual(level) {
+  riskLevelPill.className = "risk-pill";
+  heroRiskCard.style.background =
+    "linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(78, 163, 255, 0.08)), rgba(17, 26, 45, 0.82)";
+
+  if (level === "Safe") {
+    riskLevelPill.classList.add("safe");
+  } else if (level === "Low") {
+    riskLevelPill.classList.add("low");
+    heroRiskCard.style.background =
+      "linear-gradient(135deg, rgba(234, 179, 8, 0.12), rgba(78, 163, 255, 0.08)), rgba(17, 26, 45, 0.82)";
+  } else if (level === "Medium") {
+    riskLevelPill.classList.add("medium");
+    heroRiskCard.style.background =
+      "linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(78, 163, 255, 0.08)), rgba(17, 26, 45, 0.82)";
+  } else if (level === "High") {
+    riskLevelPill.classList.add("high");
+    heroRiskCard.style.background =
+      "linear-gradient(135deg, rgba(239, 68, 68, 0.16), rgba(78, 163, 255, 0.08)), rgba(17, 26, 45, 0.82)";
+  } else {
+    riskLevelPill.classList.add("safe");
+  }
+
+  riskLevelPill.textContent = level || "Safe";
+}
 
 function addEvent(message) {
   const empty = eventLog.querySelector(".empty-state");
   if (empty) empty.remove();
 
   const item = document.createElement("div");
-  item.className = "summary-item";
+  item.className = "log-item";
   item.innerHTML = `
-    <span>${new Date().toLocaleTimeString()}</span>
-    <span>${message}</span>
+    <span class="log-time">${new Date().toLocaleTimeString()}</span>
+    <span class="log-message">${message}</span>
   `;
+
   eventLog.prepend(item);
 
   while (eventLog.children.length > 20) {
@@ -73,14 +185,116 @@ function updateBadge(el, isActive) {
   el.className = "badge " + (isActive ? "badge-danger" : "badge-safe");
 }
 
-function chooseVoiceQuestion() {
-  const index = Math.floor(Math.random() * voiceQuestions.length);
-  return voiceQuestions[index];
+function resetFatigueTimers() {
+  headDropStartTime = null;
+  eyesClosedStartTime = null;
+  highRiskStartTime = null;
 }
 
-function speakText(text, onEnd = null) {
+async function postVoiceEvent(payload) {
+  try {
+    await fetch("/api/voice-event", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    addEvent("Unable to save voice assistant event");
+  }
+}
+
+function normalizeSpeechText(text) {
+  return (text || "")
+    .toLowerCase()
+    .replace(/[^\w\s']/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getVoiceSequenceKey(reason, risk) {
+  if (reason === "manual-test") return "manual";
+  if (risk === "High") return "High";
+  return "Medium";
+}
+
+function getQuestionByStage(reason, risk, stage) {
+  const key = getVoiceSequenceKey(reason, risk);
+  const sequence = DIALOG_FLOW[key] || DIALOG_FLOW.Medium;
+  return sequence[Math.min(stage, sequence.length - 1)];
+}
+
+function analyzeEnglishResponse(transcript) {
+  const text = normalizeSpeechText(transcript);
+
+  if (!text || text.length < 2) {
+    return {
+      responded: false,
+      status: "no_response",
+      message: "No clear response detected",
+    };
+  }
+
+  const hasPositive = POSITIVE_WORDS.some((word) =>
+    text.includes(normalizeSpeechText(word)),
+  );
+
+  const hasNegative = NEGATIVE_WORDS.some((word) =>
+    text.includes(normalizeSpeechText(word)),
+  );
+
+  if (hasNegative && !hasPositive) {
+    return {
+      responded: true,
+      status: "needs_break",
+      message: "Driver sounds fatigued and may need a break",
+    };
+  }
+
+  if (hasPositive && !hasNegative) {
+    return {
+      responded: true,
+      status: "responsive",
+      message: "Driver is responsive",
+    };
+  }
+
+  if (hasPositive && hasNegative) {
+    return {
+      responded: true,
+      status: "unclear_response",
+      message: "Mixed response detected, confirmation needed",
+    };
+  }
+
+  const shortSafeReplies = ["yes", "okay", "fine", "awake", "here", "good"];
+  if (shortSafeReplies.includes(text)) {
+    return {
+      responded: true,
+      status: "responsive",
+      message: "Driver is responsive",
+    };
+  }
+
+  if (text.length >= 4) {
+    return {
+      responded: true,
+      status: "unclear_response",
+      message: "Response detected, but it is unclear",
+    };
+  }
+
+  return {
+    responded: false,
+    status: "no_response",
+    message: "No clear response detected",
+  };
+}
+
+function speakEnglish(text, onEnd = null) {
   if (!("speechSynthesis" in window)) {
-    addEvent("Speech synthesis is not supported in this browser");
+    voiceAssistantStatus.textContent = "Speech unsupported";
     if (onEnd) onEnd();
     return;
   }
@@ -89,8 +303,23 @@ function speakText(text, onEnd = null) {
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "en-US";
-  utterance.rate = 1.0;
+  utterance.rate = 0.95;
   utterance.pitch = 1.0;
+  utterance.volume = 1.0;
+
+  const voices = window.speechSynthesis.getVoices();
+  const englishVoice =
+    voices.find((v) => v.lang && v.lang.toLowerCase().includes("en-us")) ||
+    voices.find((v) => v.lang && v.lang.toLowerCase().startsWith("en"));
+
+  if (englishVoice) {
+    utterance.voice = englishVoice;
+    if (voiceLanguageText) {
+      voiceLanguageText.textContent = englishVoice.lang;
+    }
+  } else if (voiceLanguageText) {
+    voiceLanguageText.textContent = "English";
+  }
 
   utterance.onstart = () => {
     voiceAssistantStatus.textContent = "Speaking";
@@ -109,28 +338,109 @@ function speakText(text, onEnd = null) {
   window.speechSynthesis.speak(utterance);
 }
 
-function analyzeDriverResponse(transcript) {
-  const text = (transcript || "").trim().toLowerCase();
+async function speakAndListen(question) {
+  currentVoiceQuestion = question;
+  voiceQuestionText.textContent = question;
+  voiceTranscriptText.textContent = "-";
+  voiceResponseStatus.textContent = "Checking response...";
 
-  if (text.length < VOICE_RESPONSE_MIN_LENGTH) {
-    return {
-      responded: false,
-      message: "No valid response detected",
-    };
-  }
+  await postVoiceEvent({
+    event_type: "assistant_triggered",
+    question: question,
+    transcript: "",
+    responded: false,
+    response_status: "Assistant triggered",
+    reason: currentVoiceReason,
+    risk_level: currentVoiceRiskLevel,
+  });
 
-  return {
-    responded: true,
-    message: "Driver response detected",
-  };
+  speakEnglish(question, () => {
+    startListening();
+  });
 }
 
-function startListeningForResponse() {
+function finishVoiceCycle() {
+  voiceAssistantBusy = false;
+  voiceAssistantStatus.textContent = "Idle";
+}
+
+async function handleResponseAnalysis(analysis, transcript) {
+  voiceResponseStatus.textContent = analysis.message;
+  currentTranscript = transcript || "";
+  voiceTranscriptText.textContent = currentTranscript || "-";
+
+  await postVoiceEvent({
+    event_type: "driver_response",
+    question: currentVoiceQuestion,
+    transcript: currentTranscript,
+    responded: analysis.responded,
+    response_status: analysis.message,
+    reason: currentVoiceReason,
+    risk_level: currentVoiceRiskLevel,
+  });
+
+  if (analysis.status === "responsive") {
+    addEvent("Driver response confirmed");
+    speakEnglish("Good. Stay focused and keep your attention on the road.");
+    finishVoiceCycle();
+    return;
+  }
+
+  if (analysis.status === "needs_break") {
+    addEvent("Driver may need a break");
+    speakEnglish(
+      "You may be too fatigued to continue safely. Please pull over in a safe place and take a short break.",
+    );
+    finishVoiceCycle();
+    return;
+  }
+
+  if (analysis.status === "unclear_response") {
+    addEvent("Unclear driver response detected");
+    currentDialogueStage += 1;
+
+    if (currentDialogueStage <= 1) {
+      const followUp = getQuestionByStage(
+        currentVoiceReason,
+        currentVoiceRiskLevel,
+        currentDialogueStage,
+      );
+      speakAndListen(followUp);
+    } else {
+      speakEnglish(
+        "I could not clearly understand your response. If you feel tired, please stop in a safe place.",
+      );
+      finishVoiceCycle();
+    }
+    return;
+  }
+
+  escalationCount += 1;
+  addEvent("No valid response detected from driver");
+  currentDialogueStage += 1;
+
+  if (currentDialogueStage <= 1) {
+    const followUp = getQuestionByStage(
+      currentVoiceReason,
+      currentVoiceRiskLevel,
+      currentDialogueStage,
+    );
+    speakAndListen(followUp);
+  } else {
+    speakEnglish(
+      "No response detected. Please pull over safely if you are feeling sleepy or unwell.",
+    );
+    finishVoiceCycle();
+  }
+}
+
+function startListening() {
   if (!SpeechRecognition) {
-    voiceAssistantStatus.textContent = "Speech recognition unsupported";
-    voiceResponseStatus.textContent = "Browser does not support voice input";
+    voiceAssistantStatus.textContent = "Speech unsupported";
+    voiceResponseStatus.textContent =
+      "Speech recognition is not supported in this browser";
     addEvent("Speech recognition is not supported in this browser");
-    voiceAssistantBusy = false;
+    finishVoiceCycle();
     return;
   }
 
@@ -138,85 +448,173 @@ function startListeningForResponse() {
   recognition.lang = "en-US";
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
+  recognition.continuous = false;
 
   let gotResult = false;
+  let alreadyHandled = false;
+  let forceStopTimeout = null;
 
   recognition.onstart = () => {
     voiceAssistantStatus.textContent = "Listening";
     addEvent("Voice assistant started listening");
   };
 
-  recognition.onresult = (event) => {
+  recognition.onresult = async (event) => {
+    if (alreadyHandled) return;
+
+    const result = event.results[event.results.length - 1];
+    if (!result || !result.isFinal) return;
+
+    alreadyHandled = true;
     gotResult = true;
-    const transcript = event.results[0][0].transcript || "";
-    lastTranscript = transcript;
 
-    voiceTranscriptText.textContent = transcript;
-    addEvent(`Driver said: ${transcript}`);
-
-    const analysis = analyzeDriverResponse(transcript);
-    voiceResponseStatus.textContent = analysis.message;
-
-    if (analysis.responded) {
-      addEvent("Driver is responsive");
-      speakText("Good. Please stay focused and drive safely.");
-    } else {
-      addEvent("No clear response from driver");
-      speakText(
-        "I could not detect a clear response. Please stop in a safe place if needed.",
-      );
+    if (forceStopTimeout) {
+      clearTimeout(forceStopTimeout);
+      forceStopTimeout = null;
     }
+
+    const transcript = result[0]?.transcript || "";
+    addEvent(`Driver response: ${transcript}`);
+
+    const analysis = analyzeEnglishResponse(transcript);
+    await handleResponseAnalysis(analysis, transcript);
+
+    try {
+      recognition.stop();
+    } catch (e) {}
   };
 
-  recognition.onerror = () => {
-    voiceAssistantStatus.textContent = "Listening error";
-    voiceResponseStatus.textContent = "No response detected";
-    addEvent("Voice listening error or no microphone permission");
-    voiceAssistantBusy = false;
+  recognition.onerror = async () => {
+    if (alreadyHandled) return;
+    alreadyHandled = true;
+
+    if (forceStopTimeout) {
+      clearTimeout(forceStopTimeout);
+      forceStopTimeout = null;
+    }
+
+    addEvent("An error occurred while listening");
+    const analysis = {
+      responded: false,
+      status: "no_response",
+      message: "Unable to capture driver response",
+    };
+    await handleResponseAnalysis(analysis, "");
   };
 
-  recognition.onend = () => {
+  recognition.onend = async () => {
+    if (forceStopTimeout) {
+      clearTimeout(forceStopTimeout);
+      forceStopTimeout = null;
+    }
+
+    if (alreadyHandled) return;
+
     if (!gotResult) {
-      voiceTranscriptText.textContent = "-";
-      voiceResponseStatus.textContent = "No response detected";
-      addEvent("No driver response detected");
-      speakText(
-        "No response detected. Please stay alert or stop in a safe place.",
-      );
+      alreadyHandled = true;
+      const analysis = {
+        responded: false,
+        status: "no_response",
+        message: "No response detected",
+      };
+      await handleResponseAnalysis(analysis, "");
     }
-
-    voiceAssistantStatus.textContent = "Idle";
-    voiceAssistantBusy = false;
   };
 
   recognition.start();
 
-  setTimeout(() => {
+  forceStopTimeout = setTimeout(() => {
     try {
       recognition.stop();
     } catch (e) {}
-  }, 6000);
+  }, LISTEN_TIMEOUT_MS);
 }
 
-function triggerVoiceAssistant(reason = "manual") {
+async function triggerSmartVoiceAssistant(reason = "manual-test") {
   const now = Date.now();
 
   if (voiceAssistantBusy) return;
-  if (now - lastVoiceTriggerTime < VOICE_COOLDOWN_MS && reason !== "manual")
+  if (
+    reason !== "manual-test" &&
+    now - lastVoiceTriggerTime < VOICE_COOLDOWN_MS
+  ) {
     return;
+  }
 
-  voiceAssistantBusy = true;
   lastVoiceTriggerTime = now;
+  voiceAssistantBusy = true;
+  currentDialogueStage = 0;
+  currentTranscript = "";
+  escalationCount = 0;
+  currentVoiceReason = reason;
+  currentVoiceRiskLevel = lastRiskLevel;
 
-  const question = chooseVoiceQuestion();
-  voiceQuestionText.textContent = question;
-  voiceTranscriptText.textContent = "-";
-  voiceResponseStatus.textContent = "Checking...";
+  const firstQuestion = getQuestionByStage(reason, currentVoiceRiskLevel, 0);
   addEvent(`Voice assistant triggered (${reason})`);
 
-  speakText(question, () => {
-    startListeningForResponse();
-  });
+  await speakAndListen(firstQuestion);
+}
+
+function handleSmartVoiceTrigger(data) {
+  const now = Date.now();
+
+  const riskLevel = (data.risk_level || "").toString().toLowerCase();
+  const isHeadDrop = !!data.head_drop;
+  const isEyesClosed = !!data.eyes_closed;
+  const isYawning = !!data.yawning;
+  const score = data.alertness_score ?? 100;
+
+  let fatigueSignals = 0;
+  if (isHeadDrop) fatigueSignals++;
+  if (isEyesClosed) fatigueSignals++;
+  if (isYawning) fatigueSignals++;
+  if (score < 70) fatigueSignals++;
+
+  if (isHeadDrop) {
+    if (!headDropStartTime) headDropStartTime = now;
+  } else {
+    headDropStartTime = null;
+  }
+
+  if (isEyesClosed) {
+    if (!eyesClosedStartTime) eyesClosedStartTime = now;
+  } else {
+    eyesClosedStartTime = null;
+  }
+
+  if (riskLevel === "high") {
+    if (!highRiskStartTime) highRiskStartTime = now;
+  } else {
+    highRiskStartTime = null;
+  }
+
+  const headDropElapsed = headDropStartTime ? now - headDropStartTime : 0;
+  const eyesClosedElapsed = eyesClosedStartTime ? now - eyesClosedStartTime : 0;
+  const highRiskElapsed = highRiskStartTime ? now - highRiskStartTime : 0;
+
+  if (highRiskElapsed >= HIGH_RISK_DELAY_MS) {
+    addEvent("High risk persisted long enough - triggering voice assistant");
+    triggerSmartVoiceAssistant("risk-high");
+    resetFatigueTimers();
+    return;
+  }
+
+  if (eyesClosedElapsed >= EYES_CLOSED_DELAY_MS && fatigueSignals >= 2) {
+    addEvent("Persistent eye closure detected - triggering voice assistant");
+    triggerSmartVoiceAssistant("eyes-closed-persistent");
+    resetFatigueTimers();
+    return;
+  }
+
+  if (
+    headDropElapsed >= HEAD_DROP_DELAY_MS &&
+    score < 70 &&
+    fatigueSignals >= 2
+  ) {
+    addEvent("Persistent head drop detected - triggering voice assistant");
+    triggerSmartVoiceAssistant("head-drop-persistent");
+    resetFatigueTimers();
+  }
 }
 
 function updateSummary(sessionData) {
@@ -263,6 +661,18 @@ function updateSummary(sessionData) {
       <span>Max Risk</span>
       <span>${sessionData.max_risk_level || "-"}</span>
     </div>
+    <div class="summary-item">
+      <span>Voice Triggers</span>
+      <span>${sessionData.voice_assistant_trigger_count ?? 0}</span>
+    </div>
+    <div class="summary-item">
+      <span>Voice Success</span>
+      <span>${sessionData.voice_response_success_count ?? 0}</span>
+    </div>
+    <div class="summary-item">
+      <span>Voice Failures</span>
+      <span>${sessionData.voice_response_failure_count ?? 0}</span>
+    </div>
   `;
 }
 
@@ -272,7 +682,6 @@ async function fetchStatus() {
     const data = await res.json();
 
     alertnessScore.textContent = data.alertness_score ?? 0;
-    riskLevel.textContent = data.risk_level ?? "-";
     riskMessage.textContent = data.message ?? "-";
     driverDetected.textContent = data.driver_detected ? "Yes" : "No";
     statusTimestamp.textContent = data.timestamp || "-";
@@ -280,32 +689,43 @@ async function fetchStatus() {
     alertBannerText.textContent = data.message || "Status updated";
     alertBannerTime.textContent = data.timestamp || "";
 
+    overviewScore.textContent = data.alertness_score ?? 0;
+    overviewRiskLevel.textContent = data.risk_level ?? "-";
+    overviewRiskMessage.textContent = data.message ?? "-";
+
     updateBadge(eyesClosedBadge, !!data.eyes_closed);
     updateBadge(yawningBadge, !!data.yawning);
     updateBadge(headDropBadge, !!data.head_drop);
 
+    setRiskVisual(data.risk_level ?? "Safe");
+
+    if (data.driver_detected) {
+      cameraStateChip.textContent = "Driver Detected";
+    } else {
+      cameraStateChip.textContent = "Waiting for Driver";
+    }
+
     if (data.risk_level === "Medium" && lastRiskLevel !== "Medium") {
       warningSound.currentTime = 0;
       warningSound.play().catch(() => {});
-      addEvent("Medium fatigue warning detected");
+      addEvent("Medium fatigue detected");
     }
 
     if (data.risk_level === "High" && lastRiskLevel !== "High") {
       alertSound.currentTime = 0;
       alertSound.play().catch(() => {});
-      addEvent("High fatigue alert detected");
+      addEvent("High fatigue detected");
     }
 
-    if (
-      sessionActive &&
-      (data.risk_level === "Medium" || data.risk_level === "High")
-    ) {
-      triggerVoiceAssistant(`risk-${data.risk_level.toLowerCase()}`);
-    }
+    lastRiskLevel = data.risk_level || "Safe";
 
-    lastRiskLevel = data.risk_level;
+    if (sessionActive) {
+      handleSmartVoiceTrigger(data);
+    } else {
+      resetFatigueTimers();
+    }
   } catch (error) {
-    addEvent("Failed to fetch status");
+    addEvent("Failed to fetch driver status");
   }
 }
 
@@ -319,13 +739,14 @@ async function fetchCurrentSession() {
     if (sessionActive) {
       sessionBadge.textContent = "Active";
       sessionBadge.className = "badge badge-safe";
-      latestSessionData = data.session;
+      overviewSessionState.textContent = "Active";
       updateSummary(data.session);
     } else {
       sessionBadge.textContent = "Inactive";
-      sessionBadge.className = "badge";
-      latestSessionData = null;
+      sessionBadge.className = "badge neutral";
+      overviewSessionState.textContent = "Inactive";
       updateSummary(null);
+      resetFatigueTimers();
     }
   } catch (error) {
     addEvent("Failed to fetch session data");
@@ -358,14 +779,15 @@ async function startSession() {
       sessionActive = true;
       sessionBadge.textContent = "Active";
       sessionBadge.className = "badge badge-safe";
+      overviewSessionState.textContent = "Active";
       addEvent("Session started");
-      fetchCurrentSession();
-      fetchHealth();
+      await fetchCurrentSession();
+      await fetchHealth();
     } else {
       addEvent(data.message || "Failed to start session");
     }
   } catch (error) {
-    addEvent("Error starting session");
+    addEvent("An error occurred while starting the session");
   }
 }
 
@@ -377,20 +799,22 @@ async function endSession() {
     if (data.success) {
       sessionActive = false;
       sessionBadge.textContent = "Inactive";
-      sessionBadge.className = "badge";
+      sessionBadge.className = "badge neutral";
+      overviewSessionState.textContent = "Inactive";
+      resetFatigueTimers();
       addEvent("Session ended");
 
       if (data.report_url) {
         window.open(data.report_url, "_blank");
       }
 
-      fetchCurrentSession();
-      fetchHealth();
+      await fetchCurrentSession();
+      await fetchHealth();
     } else {
       addEvent(data.message || "Failed to end session");
     }
   } catch (error) {
-    addEvent("Error ending session");
+    addEvent("An error occurred while ending the session");
   }
 }
 
@@ -401,16 +825,34 @@ refreshBtn.onclick = async () => {
   await fetchHealth();
   await fetchStatus();
   await fetchCurrentSession();
-  addEvent("Manual refresh complete");
+  addEvent("Status refreshed manually");
 };
 
-testVoiceBtn.onclick = () => {
-  triggerVoiceAssistant("manual");
+testVoiceBtn.onclick = async () => {
+  await triggerSmartVoiceAssistant("manual-test");
 };
 
 listenNowBtn.onclick = () => {
-  startListeningForResponse();
+  currentVoiceReason = "manual-listen";
+  currentVoiceRiskLevel = lastRiskLevel;
+  currentDialogueStage = 0;
+  startListening();
 };
+
+if ("speechSynthesis" in window) {
+  window.speechSynthesis.onvoiceschanged = () => {
+    const voices = window.speechSynthesis.getVoices();
+    const englishVoice =
+      voices.find((v) => v.lang && v.lang.toLowerCase().includes("en-us")) ||
+      voices.find((v) => v.lang && v.lang.toLowerCase().startsWith("en"));
+
+    if (voiceLanguageText) {
+      voiceLanguageText.textContent = englishVoice
+        ? englishVoice.lang
+        : "English";
+    }
+  };
+}
 
 setInterval(fetchStatus, 1500);
 setInterval(fetchCurrentSession, 3000);

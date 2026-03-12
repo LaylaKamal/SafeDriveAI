@@ -15,7 +15,7 @@ from flask import Flask, render_template, Response, jsonify, request
 try:
     from vision.detector_manager import analyze_driver
 except ImportError:
-    from detector_manager import analyze_driver
+    from vision.detector_manager import analyze_driver
 
 
 # =========================================================
@@ -164,7 +164,7 @@ def normalize_analysis_result(result: dict) -> dict:
 
 def classify_risk(score: int, driver_detected: bool, eyes_closed: bool, yawning: bool, head_drop: bool):
     if not driver_detected:
-        return "No Driver", "No face detected"
+          return "Safe", "Waiting for driver detection"
 
     if head_drop and eyes_closed:
         return "High", "Danger! Stop in a safe place immediately"
