@@ -1,6 +1,16 @@
 # SafeDriveAI
 
+**Repository:** [https://github.com/LeenEhsan/SafeDriveAI](https://github.com/LeenEhsan/SafeDriveAI)
+
 SafeDriveAI is an AI-powered driver drowsiness detection system that monitors the driver's face in real time using computer vision and generates smart alerts when fatigue signs are detected.
+
+## Demo
+
+Watch the project demo:
+
+[media/demo.mov](./media/demo.mov)
+
+> If the video does not play in the browser, download it from the link above.
 
 The system analyzes:
 
@@ -68,6 +78,8 @@ SafeDriveAI/
 ├── app.py
 ├── requirements.txt
 ├── README.md
+├── media/
+│   └── demo.mov
 │
 ├── data/
 │   ├── sessions.json
