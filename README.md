@@ -6,11 +6,12 @@ SafeDriveAI is an AI-powered driver drowsiness detection system that monitors th
 
 ## Demo
 
-Watch the project demo:
+Watch / download the project demo:
 
-[media/demo.mov](./media/demo.mov)
+- [Download demo video](https://github.com/LaylaKamal/SafeDriveAI/raw/main/media/demo.mov)
+- [Open on GitHub](https://github.com/LaylaKamal/SafeDriveAI/blob/main/media/demo.mov)
 
-> If the video does not play in the browser, download it from the link above.
+> GitHub may show “can’t show files that are this big” on the preview page — use **Download** instead.
 
 The system analyzes:
 
